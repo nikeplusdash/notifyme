@@ -211,9 +211,6 @@ img,svg{display:block;max-width:100%}
 section{position:relative;z-index:1}
 .band{padding-block:clamp(58px,8vw,100px)}
 .band--line{border-top:1px solid var(--line)}
-.head{max-width:640px}
-.head h2{font-size:clamp(2rem,4.2vw,3.1rem);margin-top:16px}
-.head p{margin-top:18px;font-size:clamp(16px,1.5vw,18px);color:var(--ink-2);max-width:56ch}
 
 /* ---------- the gap (statement) ---------- */
 .gap-band{text-align:center}
@@ -229,53 +226,6 @@ section{position:relative;z-index:1}
 .timeline .t b{color:var(--ink);font-weight:500}
 .timeline .t.on{border-color:rgba(245,199,126,.4);color:var(--dot);background:rgba(245,199,126,.06)}
 .timeline .arr{color:var(--ink-4);align-self:center}
-
-/* ---------- features (bento, varied) ---------- */
-.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
-.cell{
-  position:relative;border:1px solid var(--line);border-radius:var(--radius);
-  background:linear-gradient(180deg,var(--surface),var(--bg-grain));
-  padding:26px;overflow:hidden;transition:border-color .3s var(--ease),transform .3s var(--ease),background .3s var(--ease);
-}
-.cell:hover{border-color:var(--line-2);transform:translateY(-3px)}
-.cell h3{font-size:19px;letter-spacing:-.02em;margin-bottom:9px;display:flex;align-items:center;gap:10px}
-.cell p{font-size:14.5px;color:var(--ink-2);line-height:1.55}
-.cell .ic{flex:0 0 auto;width:30px;height:30px;display:grid;place-items:center;color:var(--dot)}
-.cell .ic svg{width:20px;height:20px}
-.cell--wide{grid-column:span 4}
-.cell--tall{grid-column:span 2}
-.cell--half{grid-column:span 3}
-.cell--third{grid-column:span 2}
-
-/* feature: teleport hero cell visual */
-.teleport-vis{margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.chip{
-  display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
-  border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:var(--surface-2);
-}
-.chip .d{width:7px;height:7px;border-radius:50%;background:var(--ink-4)}
-.chip.live .d{background:var(--dot);box-shadow:0 0 8px var(--glow)}
-.flyto{color:var(--ink-4);display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px}
-
-/* ---------- how it works ---------- */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px;counter-reset:s}
-.step{position:relative;padding:28px 24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
-.step::before{
-  counter-increment:s;content:counter(s,decimal-leading-zero);
-  font-family:var(--mono);font-size:12px;font-weight:600;color:var(--dot);letter-spacing:.1em;
-}
-.step h3{font-size:18.5px;margin:14px 0 8px}
-.step p{font-size:14.5px;color:var(--ink-2)}
-.step p code{font-family:var(--mono);font-size:12.5px;color:var(--amber);background:rgba(245,199,126,.08);padding:1px 6px;border-radius:5px}
-
-/* ---------- the mark section ---------- */
-.mark-band .mark-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center}
-.states{display:flex;gap:18px;flex-wrap:wrap}
-.state{flex:1;min-width:150px;text-align:center;border:1px solid var(--line);border-radius:var(--radius);padding:30px 18px;background:var(--surface)}
-.state .glyph{width:90px;height:90px;margin:0 auto 16px}
-.state h3{font-size:16px;margin-bottom:6px}
-.state p{font-size:13.5px;color:var(--ink-3)}
-.state.attn{border-color:rgba(245,199,126,.28);background:rgba(245,199,126,.04)}
 
 /* ---------- download ---------- */
 .download{
@@ -330,23 +280,14 @@ footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-i
 @media(max-width:920px){
   .hero__grid{grid-template-columns:1fr;gap:52px}
   .stage{max-width:480px;margin-inline:auto;width:100%}
-  .mark-band .mark-grid{grid-template-columns:1fr;gap:44px}
-  .bento{grid-template-columns:repeat(4,1fr)}
-  .cell--wide{grid-column:span 4}
-  .cell--tall{grid-column:span 2}
-  .cell--half{grid-column:span 2}
-  .cell--third{grid-column:span 2}
 }
 @media(max-width:720px){
-  .steps{grid-template-columns:1fr}
   .foot{grid-template-columns:1fr 1fr}
   .foot .about{grid-column:1/-1}
 }
 @media(max-width:560px){
   body{font-size:16px}
   .hide-sm{display:none}
-  .bento{grid-template-columns:1fr;gap:14px}
-  .cell--wide,.cell--tall,.cell--half,.cell--third{grid-column:span 1}
   .nav__links{gap:2px}
   .bug{flex-direction:column;align-items:flex-start}
   .foot{grid-template-columns:1fr}
@@ -355,7 +296,7 @@ footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-i
   .js .reveal{opacity:1!important;transform:none!important;transition:none}
   .pulse,.js .notif-stack{animation:none}
   *{scroll-behavior:auto!important}
-  .btn:hover,.cell:hover,.nav__cta:hover{transform:none}
+  .btn:hover,.nav__cta:hover{transform:none}
 }
 </style>
 </head>
@@ -370,8 +311,6 @@ footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-i
     </a>
     <nav class="nav__links" aria-label="Primary">
       <a class="txt hide-sm" href="#gap">The gap</a>
-      <a class="txt hide-sm" href="#features">Features</a>
-      <a class="txt hide-sm" href="#how">How it works</a>
       <a class="nav__cta" href="#download">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
         Download
@@ -472,107 +411,6 @@ footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-i
   </div>
 </section>
 
-<!-- ============ FEATURES ============ -->
-<section class="band" id="features">
-  <div class="wrap">
-    <div class="head">
-      <span class="kicker reveal">What it does</span>
-      <h2 class="reveal" data-d="1">Everything a notification should be, and nothing it shouldn't.</h2>
-      <p class="reveal" data-d="2">NotifyMe isn't a dashboard you have to remember to check. It's one signal, delivered where you're already looking, that takes you exactly where you need to go.</p>
-    </div>
-
-    <div class="bento">
-      <article class="cell cell--wide reveal">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-6-6m6 6-6 6"/><path d="M3 4v16" opacity=".5"/></svg></span>The notification is a door</h3>
-        <p>Click <b style="color:var(--ink)">finished</b> and NotifyMe raises the exact window and focuses the exact terminal tab — across a dozen open ones. Works with VS Code, Terminal.app and iTerm2; falls back gracefully everywhere else.</p>
-        <div class="teleport-vis" aria-hidden="true">
-          <span class="chip"><span class="d"></span>VS Code · window 3</span>
-          <span class="chip live"><span class="d"></span>zsh · acme-app</span>
-          <span class="flyto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>focused</span>
-        </div>
-      </article>
-
-      <article class="cell cell--tall reveal" data-d="1">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg></span>It reads back the answer</h3>
-        <p>The banner carries the last thing Claude actually said — <span class="mono" style="color:var(--amber);font-size:13px">"tests pass, PR is up"</span> — so you don't open the terminal just to find out what happened.</p>
-      </article>
-
-      <article class="cell cell--third reveal">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07-2.83 2.83M9.76 14.24l-2.83 2.83m0-10.14 2.83 2.83m4.48 4.48 2.83 2.83"/></svg></span>Knows when it needs you</h3>
-        <p>Permission prompts and questions surface as <span class="mono" style="color:var(--dot)">needs&nbsp;you</span> — the one interruption actually worth having.</p>
-      </article>
-
-      <article class="cell cell--third reveal" data-d="1">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>Sees the invisible agents</h3>
-        <p>Background agents that finished their turn and exited — sitting on your reply for hours with no process to find — still show up. Click through and NotifyMe opens them.</p>
-      </article>
-
-      <article class="cell cell--third reveal" data-d="2">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7c2 0 3.7.6 5.2 1.5M22 12s-3.5 7-10 7c-2 0-3.7-.6-5.2-1.5"/><path d="m3 3 18 18"/></svg></span>Quiet when you're already there</h3>
-        <p>If you're staring at the terminal it just finished in, it says nothing. No notification you didn't need — not even the one it exists to send.</p>
-      </article>
-
-      <article class="cell cell--half reveal">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M7 8v0" /><circle cx="6" cy="6" r=".6" fill="currentColor"/></svg></span>One switch. That's the whole app.</h3>
-        <p>No dashboard, no window, no Dock icon. A menu-bar mark, launch-at-login, and a single Notifications toggle. It watches, and it stays out of your way.</p>
-      </article>
-
-      <article class="cell cell--half reveal" data-d="1">
-        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>Runs entirely on your machine</h3>
-        <p>NotifyMe reads Claude Code's own session files locally and talks to the editor over loopback only. Nothing leaves your Mac. Open source, so you can check.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============ HOW IT WORKS ============ -->
-<section class="band band--line" id="how">
-  <div class="wrap">
-    <div class="head">
-      <span class="kicker reveal">How it works</span>
-      <h2 class="reveal" data-d="1">Three moving parts. Zero configuration.</h2>
-    </div>
-    <div class="steps">
-      <div class="step reveal">
-        <h3>Install &amp; launch</h3>
-        <p>Drop NotifyMe in Applications and open it. It settles into the menu bar as a single mark — no window, no Dock icon. Flip on <b style="color:var(--ink)">Launch at Login</b> and forget it's there.</p>
-      </div>
-      <div class="step reveal" data-d="1">
-        <h3>It watches <code>~/.claude</code></h3>
-        <p>NotifyMe fuses three views of your sessions — Claude Code hooks, the live session registry, and <code>claude agents</code> — so a finished turn, a blocked prompt, or a dormant background agent can't slip past.</p>
-      </div>
-      <div class="step reveal" data-d="2">
-        <h3>You get pinged</h3>
-        <p>The instant a session finishes or needs you, a native notification arrives with the details. Click it, and you're standing in the terminal that raised it.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ THE MARK ============ -->
-<section class="band mark-band">
-  <div class="wrap mark-grid">
-    <div class="reveal">
-      <span class="kicker">One dot</span>
-      <h2 style="font-size:clamp(1.9rem,4vw,2.8rem);margin-top:16px">The whole product, said in a single mark.</h2>
-      <p style="margin-top:20px;color:var(--ink-2);max-width:46ch">A white ring is a session working — quiet, self-sufficient, wanting nothing. The <span style="color:var(--dot);font-weight:600">amber dot</span> is the one that's broken away and wants you. Everything else is monochrome, so the single point of colour is the only thing in the figure that's <em>asking</em> for something.</p>
-      <p style="margin-top:16px;color:var(--ink-3);max-width:46ch;font-size:15px">That's the same promise the notification keeps: colour means attention, and attention means <em>you</em>.</p>
-    </div>
-    <div class="states reveal" data-d="1">
-      <div class="state">
-        <svg class="glyph" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="40" fill="none" stroke="#F6F6F9" stroke-width="11"/></svg>
-        <h3>Working</h3>
-        <p>A quiet ring. Says nothing.</p>
-      </div>
-      <div class="state attn">
-        <svg class="glyph" viewBox="0 0 120 120" aria-hidden="true"><path d="M 43.6 39.2 A 40 40 0 1 0 70.7 30.0" fill="none" stroke="#F6F6F9" stroke-width="11" stroke-linecap="round"/><circle class="pulse" cx="47.3" cy="27.9" r="6.2" fill="#F5C77E"/></svg>
-        <h3>Needs you</h3>
-        <p>The dot breaks away. You're notified.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ DOWNLOAD ============ -->
 <section class="band band--line" id="download">
   <div class="wrap">
@@ -628,8 +466,7 @@ footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-i
       </div>
       <div class="col">
         <h4>Product</h4>
-        <a href="#features">Features</a>
-        <a href="#how">How it works</a>
+        <a href="#gap">What it does</a>
         <a href="#download">Download</a>
         <a href="https://github.com/nikeplusdash/notifyme/releases" target="_blank" rel="noopener">Releases</a>
       </div>
