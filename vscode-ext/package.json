@@ -1,0 +1,38 @@
+{
+  "name": "notifyme-bridge",
+  "displayName": "NotifyMe Bridge",
+  "description": "Local IPC bridge that lets the NotifyMe menu-bar app focus the VS Code terminal tab running a given Claude Code session.",
+  "version": "0.1.0",
+  "publisher": "notifyme",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "notifyMe.showBridgeStatus",
+        "title": "NotifyMe: Show Bridge Status"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "typecheck": "tsc --noEmit -p ./",
+    "test": "npm run compile && node --test \"out/test/**/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/vscode": "^1.94.0",
+    "typescript": "^5.9.3"
+  }
+}

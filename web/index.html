@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NotifyMe — Know the second Claude Code is done</title>
+<meta name="description" content="NotifyMe is a macOS menu-bar app that pings you the instant a Claude Code session finishes or needs you — then teleports you back to the exact terminal. Your time is as valuable as your tokens.">
+<meta name="theme-color" content="#0B0B0E">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="canonical" href="https://notifyme.madebynikesh.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NotifyMe">
+<meta property="og:title" content="NotifyMe — Know the second Claude Code is done">
+<meta property="og:description" content="A macOS menu-bar app that pings you the instant a Claude Code session finishes or needs you — then teleports you back to the exact terminal.">
+<meta property="og:url" content="https://notifyme.madebynikesh.com/">
+<meta property="og:image" content="https://notifyme.madebynikesh.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NotifyMe — Know the second Claude Code is done">
+<meta name="twitter:description" content="A macOS menu-bar app that tells you the instant Claude Code is done, and puts you back in the terminal that raised it.">
+<meta name="twitter:image" content="https://notifyme.madebynikesh.com/assets/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0B0B0E;
+  --bg-grain:#0d0d11;
+  --tile-top:#1B1B20;
+  --surface:#131318;
+  --surface-2:#17171d;
+  --surface-3:#1d1d24;
+  --ink:#F6F6F9;
+  --ink-2:#c3c3cd;
+  --ink-3:#8a8a95;
+  --ink-4:#63636e;
+  --dot:#F5C77E;          /* the icon's apricot — authentic accent */
+  --amber:#F2BE6C;
+  --amber-strong:#EDAE4C;
+  --line:rgba(246,246,249,.09);
+  --line-2:rgba(246,246,249,.14);
+  --glow:rgba(245,199,126,.5);
+  --radius:16px;
+  --maxw:1140px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--ink-2);
+  line-height:1.65;
+  font-size:17px;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60rem 40rem at 78% -8%, rgba(245,199,126,.10), transparent 60%),
+    radial-gradient(50rem 40rem at 8% 8%, rgba(246,246,249,.04), transparent 55%);
+}
+h1,h2,h3{color:var(--ink);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+img,svg{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
+::selection{background:rgba(245,199,126,.24);color:#fff}
+
+.wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:clamp(20px,5vw,40px);position:relative;z-index:1}
+.mono{font-family:var(--mono);font-weight:500}
+.kicker{
+  font-family:var(--mono);font-size:12.5px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--amber);
+  display:inline-flex;align-items:center;gap:.6em;
+}
+.kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dot);box-shadow:0 0 10px var(--glow)}
+
+/* ---------- buttons ---------- */
+.btn{
+  --b:transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:.55em;
+  font-family:var(--font);font-weight:600;font-size:15.5px;letter-spacing:-.01em;
+  padding:.82em 1.35em;border-radius:12px;border:1px solid var(--b);
+  cursor:pointer;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease);
+  white-space:nowrap;
+}
+.btn svg{width:17px;height:17px}
+.btn--primary{background:var(--ink);color:#111;--b:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 10px 30px -12px rgba(246,246,249,.4)}
+.btn--primary:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 16px 36px -12px rgba(246,246,249,.5)}
+.btn--ghost{background:rgba(246,246,249,.03);color:var(--ink);--b:var(--line-2)}
+.btn--ghost:hover{background:rgba(246,246,249,.07);border-color:rgba(246,246,249,.28);transform:translateY(-2px)}
+.btn--amber{background:linear-gradient(180deg,var(--amber),var(--amber-strong));color:#2a1c05;--b:var(--amber-strong);box-shadow:0 10px 30px -10px var(--glow)}
+.btn--amber:hover{transform:translateY(-2px);box-shadow:0 16px 40px -10px var(--glow)}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:50;transition:background .3s var(--ease),border-color .3s var(--ease),backdrop-filter .3s var(--ease)}
+.nav.scrolled{background:rgba(11,11,14,.72);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.nav__in{display:flex;align-items:center;justify-content:space-between;height:66px}
+.brand{display:inline-flex;align-items:center;gap:11px;color:var(--ink);font-weight:600;letter-spacing:-.02em}
+.brand svg{width:29px;height:29px;border-radius:8px}
+.brand b{font-weight:700}
+.nav__links{display:flex;align-items:center;gap:6px}
+.nav__links a.txt{color:var(--ink-3);font-size:14.5px;font-weight:500;padding:8px 12px;border-radius:9px;transition:color .2s,background .2s}
+.nav__links a.txt:hover{color:var(--ink);background:rgba(246,246,249,.05)}
+.nav__cta{display:inline-flex;align-items:center;gap:.5em;font-size:14.5px;font-weight:600;color:var(--ink);border:1px solid var(--line-2);padding:8px 15px;border-radius:10px;transition:border-color .2s,background .2s,transform .2s}
+.nav__cta:hover{background:rgba(246,246,249,.06);border-color:rgba(246,246,249,.3);transform:translateY(-1px)}
+.hide-sm{display:inline-flex}
+
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(48px,8vw,96px);padding-bottom:clamp(48px,7vw,92px)}
+.hero__grid{display:grid;grid-template-columns:1.02fr 1fr;gap:clamp(32px,5vw,72px);align-items:center}
+.hero h1{font-size:clamp(2.6rem,6vw,4.5rem);margin:22px 0 0}
+.hero h1 .done{position:relative;white-space:nowrap;color:var(--dot)}
+.hero__sub{margin-top:26px;font-size:clamp(16.5px,1.6vw,19px);max-width:38ch;color:var(--ink-2)}
+.hero__sub b{color:var(--ink);font-weight:600}
+.hero__cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero__meta{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px;color:var(--ink-3);font-family:var(--mono)}
+.hero__meta span{display:inline-flex;align-items:center;gap:.5em}
+.hero__meta span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--amber);opacity:.7}
+
+/* ---------- the macOS notification (money shot) ---------- */
+.stage{position:relative;perspective:1400px}
+.menubar{
+  display:flex;align-items:center;gap:16px;justify-content:flex-end;
+  height:30px;padding:0 12px;margin:0 auto 20px;max-width:440px;
+  background:linear-gradient(180deg,rgba(28,28,34,.9),rgba(20,20,25,.8));
+  border:1px solid var(--line);border-radius:9px;
+  color:var(--ink-3);font-size:12px;font-family:var(--mono);
+  box-shadow:0 10px 30px -18px rgba(0,0,0,.9);
+}
+.menubar .sys{opacity:.5;letter-spacing:.02em}
+.menubar .mark{margin-right:auto;margin-left:2px;display:flex;align-items:center;gap:7px;color:var(--ink)}
+.menubar .mark svg{width:16px;height:16px}
+.menubar .mark span{position:relative}
+.menubar .mark span::after{content:"";position:absolute;inset:-6px -8px;border-radius:6px;background:rgba(246,246,249,.08)}
+
+.notif-stack{position:relative;max-width:440px;margin-inline:auto}
+.notif{
+  position:relative;
+  display:flex;gap:13px;
+  padding:15px 16px;
+  background:linear-gradient(180deg,rgba(38,38,45,.86),rgba(26,26,32,.9));
+  border:1px solid rgba(246,246,249,.13);
+  border-radius:20px;
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.9),0 2px 0 rgba(255,255,255,.05) inset;
+  backdrop-filter:blur(24px) saturate(1.3);
+}
+.notif--ghost{
+  position:absolute;left:14px;right:14px;top:-18px;z-index:-1;
+  opacity:.62;transform:scale(.965);
+  filter:saturate(.9);
+  padding-bottom:26px;
+}
+.notif__icon{flex:0 0 auto;width:44px;height:44px;border-radius:11px;overflow:hidden;box-shadow:0 6px 16px -6px rgba(0,0,0,.7)}
+.notif__icon svg{width:100%;height:100%}
+.notif__body{min-width:0;flex:1;padding-top:1px}
+.notif__head{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.notif__app{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.13em;color:var(--ink-3);text-transform:uppercase}
+.notif__time{margin-left:auto;font-size:11.5px;color:var(--ink-4)}
+.notif__title{color:#fff;font-weight:600;font-size:15px;letter-spacing:-.01em;line-height:1.3}
+.notif__text{color:var(--ink-2);font-size:13.5px;line-height:1.5;margin-top:2px}
+.notif__text .path{font-family:var(--mono);color:var(--amber);font-size:12.5px}
+
+.teleport-hint{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  margin-top:22px;font-size:13px;color:var(--ink-3);font-family:var(--mono);
+}
+.teleport-hint kbd{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-2);
+  border:1px solid var(--line-2);border-bottom-width:2px;border-radius:6px;padding:2px 7px;background:rgba(246,246,249,.04);
+}
+.cursor{width:16px;height:16px;color:var(--ink)}
+
+/* the app's actual menu — "one switch, whole app" */
+.menu-drop{
+  max-width:252px;margin:34px auto 0;padding:6px;
+  background:linear-gradient(180deg,rgba(45,45,53,.9),rgba(32,32,39,.93));
+  border:1px solid rgba(246,246,249,.13);border-radius:13px;
+  box-shadow:0 34px 64px -26px rgba(0,0,0,.9),0 2px 0 rgba(255,255,255,.05) inset;
+  backdrop-filter:blur(24px) saturate(1.3);font-size:13px;
+}
+.menu-drop .mi{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:8px;color:var(--ink-2)}
+.menu-drop .mi.is-on{color:var(--ink)}
+.menu-drop .mi .tick{width:14px;flex:0 0 14px;color:var(--dot);display:inline-flex}
+.menu-drop .mi .tick svg{width:14px;height:14px}
+.menu-drop .mi.hi{background:rgba(245,199,126,.14);color:#fff}
+.menu-drop .mi.hi .tick{color:var(--dot)}
+.menu-drop .sep{height:1px;background:var(--line);margin:5px 9px}
+.stage-cap{text-align:center;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--ink-4);letter-spacing:.01em}
+
+/* glow around the whole stage */
+.stage::after{
+  content:"";position:absolute;z-index:-2;inset:-6% -4% -10%;
+  background:radial-gradient(50% 46% at 50% 42%,rgba(245,199,126,.14),transparent 72%);
+  filter:blur(6px);pointer-events:none;
+}
+
+/* ---------- section shells ---------- */
+section{position:relative;z-index:1}
+.band{padding-block:clamp(58px,8vw,100px)}
+.band--line{border-top:1px solid var(--line)}
+.head{max-width:640px}
+.head h2{font-size:clamp(2rem,4.2vw,3.1rem);margin-top:16px}
+.head p{margin-top:18px;font-size:clamp(16px,1.5vw,18px);color:var(--ink-2);max-width:56ch}
+
+/* ---------- the gap (statement) ---------- */
+.gap-band{text-align:center}
+.gap-band .statement{
+  font-size:clamp(1.7rem,4.6vw,3.15rem);font-weight:700;letter-spacing:-.035em;
+  color:var(--ink);line-height:1.12;max-width:19ch;margin-inline:auto;text-wrap:balance;
+}
+.gap-band .statement em{font-style:normal;color:var(--ink-4)}
+.gap-band .statement .hl{color:var(--dot)}
+.gap-band .lead{margin:30px auto 0;max-width:58ch;font-size:clamp(16.5px,1.6vw,18.5px);color:var(--ink-2)}
+.timeline{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:44px;font-family:var(--mono);font-size:13px}
+.timeline .t{display:inline-flex;align-items:center;gap:9px;padding:9px 15px;border:1px solid var(--line);border-radius:100px;color:var(--ink-3);background:var(--surface)}
+.timeline .t b{color:var(--ink);font-weight:500}
+.timeline .t.on{border-color:rgba(245,199,126,.4);color:var(--dot);background:rgba(245,199,126,.06)}
+.timeline .arr{color:var(--ink-4);align-self:center}
+
+/* ---------- features (bento, varied) ---------- */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
+.cell{
+  position:relative;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(180deg,var(--surface),var(--bg-grain));
+  padding:26px;overflow:hidden;transition:border-color .3s var(--ease),transform .3s var(--ease),background .3s var(--ease);
+}
+.cell:hover{border-color:var(--line-2);transform:translateY(-3px)}
+.cell h3{font-size:19px;letter-spacing:-.02em;margin-bottom:9px;display:flex;align-items:center;gap:10px}
+.cell p{font-size:14.5px;color:var(--ink-2);line-height:1.55}
+.cell .ic{flex:0 0 auto;width:30px;height:30px;display:grid;place-items:center;color:var(--dot)}
+.cell .ic svg{width:20px;height:20px}
+.cell--wide{grid-column:span 4}
+.cell--tall{grid-column:span 2}
+.cell--half{grid-column:span 3}
+.cell--third{grid-column:span 2}
+
+/* feature: teleport hero cell visual */
+.teleport-vis{margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:var(--surface-2);
+}
+.chip .d{width:7px;height:7px;border-radius:50%;background:var(--ink-4)}
+.chip.live .d{background:var(--dot);box-shadow:0 0 8px var(--glow)}
+.flyto{color:var(--ink-4);display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px}
+
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px;counter-reset:s}
+.step{position:relative;padding:28px 24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.step::before{
+  counter-increment:s;content:counter(s,decimal-leading-zero);
+  font-family:var(--mono);font-size:12px;font-weight:600;color:var(--dot);letter-spacing:.1em;
+}
+.step h3{font-size:18.5px;margin:14px 0 8px}
+.step p{font-size:14.5px;color:var(--ink-2)}
+.step p code{font-family:var(--mono);font-size:12.5px;color:var(--amber);background:rgba(245,199,126,.08);padding:1px 6px;border-radius:5px}
+
+/* ---------- the mark section ---------- */
+.mark-band .mark-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center}
+.states{display:flex;gap:18px;flex-wrap:wrap}
+.state{flex:1;min-width:150px;text-align:center;border:1px solid var(--line);border-radius:var(--radius);padding:30px 18px;background:var(--surface)}
+.state .glyph{width:90px;height:90px;margin:0 auto 16px}
+.state h3{font-size:16px;margin-bottom:6px}
+.state p{font-size:13.5px;color:var(--ink-3)}
+.state.attn{border-color:rgba(245,199,126,.28);background:rgba(245,199,126,.04)}
+
+/* ---------- download ---------- */
+.download{
+  border:1px solid var(--line-2);border-radius:24px;overflow:hidden;
+  background:
+    radial-gradient(80% 120% at 82% -20%,rgba(245,199,126,.14),transparent 60%),
+    linear-gradient(180deg,var(--surface-2),var(--bg-grain));
+  padding:clamp(36px,6vw,64px);text-align:center;position:relative;
+}
+.download h2{font-size:clamp(2rem,4.4vw,3.2rem)}
+.download p.sub{margin:18px auto 0;max-width:52ch;color:var(--ink-2);font-size:17px}
+.download .cta{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;margin-top:34px}
+.download .req{margin-top:26px;font-family:var(--mono);font-size:13px;color:var(--ink-4);display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center}
+.download .req span::before{content:"› ";color:var(--dot)}
+.notice{margin-top:30px;padding-top:22px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-3);max-width:60ch;margin-inline:auto}
+.notice code{font-family:var(--mono);color:var(--ink-2);font-size:12.5px}
+
+/* ---------- report a bug ---------- */
+.bug{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;
+  border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px;margin-top:22px;background:var(--surface)}
+.bug h3{font-size:19px;margin-bottom:5px}
+.bug p{font-size:14.5px;color:var(--ink-3)}
+.bug .actions{display:flex;gap:12px;flex-wrap:wrap}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding-block:56px;position:relative;z-index:1}
+.foot{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+.foot .col h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin:0 0 14px;font-weight:600}
+.foot .col a{display:block;color:var(--ink-3);font-size:14.5px;padding:4px 0;transition:color .2s}
+.foot .col a:hover{color:var(--ink)}
+.foot .about .brand{margin-bottom:14px}
+.foot .about p{font-size:14px;color:var(--ink-3);max-width:34ch}
+.foot-base{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-4)}
+.foot-base .mono{color:var(--ink-3)}
+.foot-base a{color:var(--ink-3)}
+.foot-base a:hover{color:var(--ink)}
+
+/* ---------- reveal motion ---------- */
+.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.js .reveal.is-in{opacity:1;transform:none}
+.js .reveal[data-d="1"]{transition-delay:.08s}
+.js .reveal[data-d="2"]{transition-delay:.16s}
+.js .reveal[data-d="3"]{transition-delay:.24s}
+.js .reveal[data-d="4"]{transition-delay:.32s}
+
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 var(--glow)}50%{box-shadow:0 0 22px 3px var(--glow)}}
+.pulse{animation:dotPulse 2.8s var(--ease) infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.js .notif-stack{animation:floaty 7s ease-in-out infinite}
+
+/* ---------- responsive ---------- */
+@media(max-width:920px){
+  .hero__grid{grid-template-columns:1fr;gap:52px}
+  .stage{max-width:480px;margin-inline:auto;width:100%}
+  .mark-band .mark-grid{grid-template-columns:1fr;gap:44px}
+  .bento{grid-template-columns:repeat(4,1fr)}
+  .cell--wide{grid-column:span 4}
+  .cell--tall{grid-column:span 2}
+  .cell--half{grid-column:span 2}
+  .cell--third{grid-column:span 2}
+}
+@media(max-width:720px){
+  .steps{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr 1fr}
+  .foot .about{grid-column:1/-1}
+}
+@media(max-width:560px){
+  body{font-size:16px}
+  .hide-sm{display:none}
+  .bento{grid-template-columns:1fr;gap:14px}
+  .cell--wide,.cell--tall,.cell--half,.cell--third{grid-column:span 1}
+  .nav__links{gap:2px}
+  .bug{flex-direction:column;align-items:flex-start}
+  .foot{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .js .reveal{opacity:1!important;transform:none!important;transition:none}
+  .pulse,.js .notif-stack{animation:none}
+  *{scroll-behavior:auto!important}
+  .btn:hover,.cell:hover,.nav__cta:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav__in">
+    <a class="brand" href="/" aria-label="NotifyMe home">
+      <svg viewBox="0 0 1024 1024" aria-hidden="true"><defs><linearGradient id="t1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B1B20"/><stop offset="1" stop-color="#0B0B0E"/></linearGradient></defs><rect x="100" y="100" width="824" height="824" rx="185" fill="url(#t1)"/><path d="M 352.59 322.02 A 248 248 0 1 0 520.66 264.15" fill="none" stroke="#F6F6F9" stroke-width="80.75" stroke-linecap="round"/><circle cx="431.26" cy="277.51" r="38.35" fill="#F5C77E"/></svg>
+      <span>Notify<b>Me</b></span>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a class="txt hide-sm" href="#gap">The gap</a>
+      <a class="txt hide-sm" href="#features">Features</a>
+      <a class="txt hide-sm" href="#how">How it works</a>
+      <a class="nav__cta" href="#download">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        Download
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <span class="kicker reveal">macOS menu bar · for Claude Code</span>
+      <h1 class="reveal" data-d="1">Know the second Claude Code is <span class="done">done.</span></h1>
+      <p class="hero__sub reveal" data-d="2">NotifyMe watches your Claude Code sessions and pings you the instant one finishes — or needs you. Click the notification and land right back in the terminal that raised it. <b>Your time is as valuable as your tokens.</b></p>
+      <div class="hero__cta reveal" data-d="3">
+        <a class="btn btn--primary" href="#download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+          Download for macOS
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/nikeplusdash/notifyme" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+          View source
+        </a>
+      </div>
+      <div class="hero__meta reveal" data-d="4">
+        <span>Free &amp; open source</span>
+        <span>macOS 13+</span>
+        <span>Apple silicon</span>
+      </div>
+    </div>
+
+    <div class="stage reveal" data-d="2" aria-hidden="false">
+      <div class="menubar" aria-hidden="true">
+        <span class="mark">
+          <svg viewBox="0 0 1024 1024"><path d="M 352.59 322.02 A 248 248 0 1 0 520.66 264.15" fill="none" stroke="#F6F6F9" stroke-width="80.75" stroke-linecap="round"/><circle cx="431.26" cy="277.51" r="52" fill="#F5C77E"/></svg>
+          <span></span>
+        </span>
+        <span class="sys">100%</span>
+        <span class="sys">Wed 9:41</span>
+      </div>
+
+      <div class="notif-stack">
+        <!-- background: the "needs you" state, peeking -->
+        <article class="notif notif--ghost" aria-hidden="true">
+          <div class="notif__icon">
+            <svg viewBox="0 0 1024 1024"><defs><linearGradient id="t2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B1B20"/><stop offset="1" stop-color="#0B0B0E"/></linearGradient></defs><rect width="1024" height="1024" rx="230" fill="url(#t2)"/><path d="M 352.59 322.02 A 248 248 0 1 0 520.66 264.15" fill="none" stroke="#F6F6F9" stroke-width="80.75" stroke-linecap="round"/><circle cx="431.26" cy="277.51" r="38.35" fill="#F5C77E"/></svg>
+          </div>
+          <div class="notif__body">
+            <div class="notif__head"><span class="notif__app">NotifyMe</span><span class="notif__time">now</span></div>
+            <div class="notif__title">api-worker needs you</div>
+            <div class="notif__text">Allow running the database migration?</div>
+          </div>
+        </article>
+
+        <!-- foreground: the money shot — "finished" -->
+        <article class="notif" aria-label="Notification from NotifyMe: acme-app finished">
+          <div class="notif__icon">
+            <svg viewBox="0 0 1024 1024"><defs><linearGradient id="t3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B1B20"/><stop offset="1" stop-color="#0B0B0E"/></linearGradient></defs><rect width="1024" height="1024" rx="230" fill="url(#t3)"/><path d="M 352.59 322.02 A 248 248 0 1 0 520.66 264.15" fill="none" stroke="#F6F6F9" stroke-width="80.75" stroke-linecap="round"/><circle class="pulse" cx="431.26" cy="277.51" r="38.35" fill="#F5C77E"/></svg>
+          </div>
+          <div class="notif__body">
+            <div class="notif__head"><span class="notif__app">NotifyMe</span><span class="notif__time">now</span></div>
+            <div class="notif__title">acme-app finished</div>
+            <div class="notif__text">Scaffolded the app — Next.js 15, Tailwind and auth all wired up. Dev server's live on <span class="path">localhost:3000</span>. Take a look.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="teleport-hint" aria-hidden="true">
+        <svg class="cursor" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2l6.5 15.5 2.3-6 6-2.4L4 2z"/></svg>
+        click <kbd>finished</kbd> → you're back in the terminal
+      </div>
+
+      <div class="menu-drop" aria-hidden="true">
+        <div class="mi is-on"><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 6"/></svg></span>Launch at Login</div>
+        <div class="mi is-on hi"><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 6"/></svg></span>Notifications</div>
+        <div class="sep"></div>
+        <div class="mi"><span class="tick"></span>Quit NotifyMe</div>
+      </div>
+      <p class="stage-cap" aria-hidden="true">no window · no dock icon · this is the whole app</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE GAP ============ -->
+<section class="band band--line gap-band" id="gap">
+  <div class="wrap">
+    <span class="kicker reveal">The gap</span>
+    <p class="statement reveal" data-d="1">You tab away. Claude finishes in <span class="hl">40 seconds.</span> <em>You find out twenty minutes later.</em></p>
+    <p class="lead reveal" data-d="2">That's the gap NotifyMe closes. The moment a session goes from <span class="mono" style="color:var(--ink)">working</span> to <span class="mono" style="color:var(--dot)">done</span>, a native macOS notification tells you what Claude <em>said</em> — not just that it happened. One click puts you back in the exact tab. No polling a terminal that isn't ready. No forgotten agent blocked on your reply.</p>
+    <div class="timeline reveal" data-d="3" aria-hidden="true">
+      <span class="t"><b>busy</b> · Claude is working</span>
+      <span class="arr">→</span>
+      <span class="t on">● done · you're notified</span>
+      <span class="arr">→</span>
+      <span class="t"><b>click</b> · teleport to the tab</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="band" id="features">
+  <div class="wrap">
+    <div class="head">
+      <span class="kicker reveal">What it does</span>
+      <h2 class="reveal" data-d="1">Everything a notification should be, and nothing it shouldn't.</h2>
+      <p class="reveal" data-d="2">NotifyMe isn't a dashboard you have to remember to check. It's one signal, delivered where you're already looking, that takes you exactly where you need to go.</p>
+    </div>
+
+    <div class="bento">
+      <article class="cell cell--wide reveal">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-6-6m6 6-6 6"/><path d="M3 4v16" opacity=".5"/></svg></span>The notification is a door</h3>
+        <p>Click <b style="color:var(--ink)">finished</b> and NotifyMe raises the exact window and focuses the exact terminal tab — across a dozen open ones. Works with VS Code, Terminal.app and iTerm2; falls back gracefully everywhere else.</p>
+        <div class="teleport-vis" aria-hidden="true">
+          <span class="chip"><span class="d"></span>VS Code · window 3</span>
+          <span class="chip live"><span class="d"></span>zsh · acme-app</span>
+          <span class="flyto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>focused</span>
+        </div>
+      </article>
+
+      <article class="cell cell--tall reveal" data-d="1">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg></span>It reads back the answer</h3>
+        <p>The banner carries the last thing Claude actually said — <span class="mono" style="color:var(--amber);font-size:13px">"tests pass, PR is up"</span> — so you don't open the terminal just to find out what happened.</p>
+      </article>
+
+      <article class="cell cell--third reveal">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07-2.83 2.83M9.76 14.24l-2.83 2.83m0-10.14 2.83 2.83m4.48 4.48 2.83 2.83"/></svg></span>Knows when it needs you</h3>
+        <p>Permission prompts and questions surface as <span class="mono" style="color:var(--dot)">needs&nbsp;you</span> — the one interruption actually worth having.</p>
+      </article>
+
+      <article class="cell cell--third reveal" data-d="1">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>Sees the invisible agents</h3>
+        <p>Background agents that finished their turn and exited — sitting on your reply for hours with no process to find — still show up. Click through and NotifyMe opens them.</p>
+      </article>
+
+      <article class="cell cell--third reveal" data-d="2">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7c2 0 3.7.6 5.2 1.5M22 12s-3.5 7-10 7c-2 0-3.7-.6-5.2-1.5"/><path d="m3 3 18 18"/></svg></span>Quiet when you're already there</h3>
+        <p>If you're staring at the terminal it just finished in, it says nothing. No notification you didn't need — not even the one it exists to send.</p>
+      </article>
+
+      <article class="cell cell--half reveal">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M7 8v0" /><circle cx="6" cy="6" r=".6" fill="currentColor"/></svg></span>One switch. That's the whole app.</h3>
+        <p>No dashboard, no window, no Dock icon. A menu-bar mark, launch-at-login, and a single Notifications toggle. It watches, and it stays out of your way.</p>
+      </article>
+
+      <article class="cell cell--half reveal" data-d="1">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>Runs entirely on your machine</h3>
+        <p>NotifyMe reads Claude Code's own session files locally and talks to the editor over loopback only. Nothing leaves your Mac. Open source, so you can check.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="band band--line" id="how">
+  <div class="wrap">
+    <div class="head">
+      <span class="kicker reveal">How it works</span>
+      <h2 class="reveal" data-d="1">Three moving parts. Zero configuration.</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <h3>Install &amp; launch</h3>
+        <p>Drop NotifyMe in Applications and open it. It settles into the menu bar as a single mark — no window, no Dock icon. Flip on <b style="color:var(--ink)">Launch at Login</b> and forget it's there.</p>
+      </div>
+      <div class="step reveal" data-d="1">
+        <h3>It watches <code>~/.claude</code></h3>
+        <p>NotifyMe fuses three views of your sessions — Claude Code hooks, the live session registry, and <code>claude agents</code> — so a finished turn, a blocked prompt, or a dormant background agent can't slip past.</p>
+      </div>
+      <div class="step reveal" data-d="2">
+        <h3>You get pinged</h3>
+        <p>The instant a session finishes or needs you, a native notification arrives with the details. Click it, and you're standing in the terminal that raised it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE MARK ============ -->
+<section class="band mark-band">
+  <div class="wrap mark-grid">
+    <div class="reveal">
+      <span class="kicker">One dot</span>
+      <h2 style="font-size:clamp(1.9rem,4vw,2.8rem);margin-top:16px">The whole product, said in a single mark.</h2>
+      <p style="margin-top:20px;color:var(--ink-2);max-width:46ch">A white ring is a session working — quiet, self-sufficient, wanting nothing. The <span style="color:var(--dot);font-weight:600">amber dot</span> is the one that's broken away and wants you. Everything else is monochrome, so the single point of colour is the only thing in the figure that's <em>asking</em> for something.</p>
+      <p style="margin-top:16px;color:var(--ink-3);max-width:46ch;font-size:15px">That's the same promise the notification keeps: colour means attention, and attention means <em>you</em>.</p>
+    </div>
+    <div class="states reveal" data-d="1">
+      <div class="state">
+        <svg class="glyph" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="40" fill="none" stroke="#F6F6F9" stroke-width="11"/></svg>
+        <h3>Working</h3>
+        <p>A quiet ring. Says nothing.</p>
+      </div>
+      <div class="state attn">
+        <svg class="glyph" viewBox="0 0 120 120" aria-hidden="true"><path d="M 43.6 39.2 A 40 40 0 1 0 70.7 30.0" fill="none" stroke="#F6F6F9" stroke-width="11" stroke-linecap="round"/><circle class="pulse" cx="47.3" cy="27.9" r="6.2" fill="#F5C77E"/></svg>
+        <h3>Needs you</h3>
+        <p>The dot breaks away. You're notified.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DOWNLOAD ============ -->
+<section class="band band--line" id="download">
+  <div class="wrap">
+    <div class="download reveal">
+      <span class="kicker" style="justify-content:center;display:inline-flex">Get NotifyMe</span>
+      <h2 style="margin-top:16px">Stop checking. Start shipping.</h2>
+      <p class="sub">Free, open source, and about as light as a Mac app gets. Grab the latest release and it's in your menu bar in under a minute.</p>
+      <div class="cta">
+        <a class="btn btn--amber" href="https://github.com/nikeplusdash/notifyme/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+          Download the latest release
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/nikeplusdash/notifyme#build-from-source" target="_blank" rel="noopener">Build from source</a>
+      </div>
+      <div class="req">
+        <span>macOS 13 Ventura or later</span>
+        <span>Apple silicon</span>
+        <span>Claude Code</span>
+        <span>VS Code · Terminal · iTerm2</span>
+      </div>
+      <p class="notice">Builds are ad-hoc signed, not notarized — on first launch, right-click the app and choose <code>Open</code> to get past Gatekeeper. Prefer to build it yourself? <code>make run</code> and you're going.</p>
+    </div>
+
+    <div class="bug reveal" data-d="1">
+      <div>
+        <h3>Found a bug? Something feel off?</h3>
+        <p>NotifyMe is early and I want to hear it. A one-line email or a GitHub issue both land with me.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn--ghost" href="mailto:ux@madebynikesh.com?subject=NotifyMe%20bug%20report&body=What%20happened%3A%0A%0AWhat%20you%20expected%3A%0A%0AmacOS%20version%20%2F%20editor%3A%0A">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          Email ux@madebynikesh.com
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/nikeplusdash/notifyme/issues/new" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+          Open a GitHub issue
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="col about">
+        <a class="brand" href="/" aria-label="NotifyMe">
+          <svg viewBox="0 0 1024 1024" aria-hidden="true"><defs><linearGradient id="t4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B1B20"/><stop offset="1" stop-color="#0B0B0E"/></linearGradient></defs><rect x="100" y="100" width="824" height="824" rx="185" fill="url(#t4)"/><path d="M 352.59 322.02 A 248 248 0 1 0 520.66 264.15" fill="none" stroke="#F6F6F9" stroke-width="80.75" stroke-linecap="round"/><circle cx="431.26" cy="277.51" r="38.35" fill="#F5C77E"/></svg>
+          <span>Notify<b>Me</b></span>
+        </a>
+        <p>Know the second Claude Code is done. A tiny macOS menu-bar app, made by Nikesh.</p>
+      </div>
+      <div class="col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#download">Download</a>
+        <a href="https://github.com/nikeplusdash/notifyme/releases" target="_blank" rel="noopener">Releases</a>
+      </div>
+      <div class="col">
+        <h4>Project</h4>
+        <a href="https://github.com/nikeplusdash/notifyme" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:ux@madebynikesh.com?subject=NotifyMe%20bug%20report">Report a bug</a>
+        <a href="https://github.com/nikeplusdash/notifyme/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span class="mono">© 2026 NotifyMe · Made by Nikesh</span>
+      <span class="mono">Not affiliated with Anthropic. Claude Code is a trademark of Anthropic.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+// nav background on scroll
+const nav=document.getElementById('nav');
+const onScroll=()=>nav.classList.toggle('scrolled',window.scrollY>12);
+onScroll();addEventListener('scroll',onScroll,{passive:true});
+// reveal on view — content is visible by default; this only enhances
+const prefersReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const els=[...document.querySelectorAll('.reveal')];
+if('IntersectionObserver'in window && !prefersReduced){
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}});
+  },{rootMargin:'0px 0px -8% 0px',threshold:.12});
+  els.forEach(el=>io.observe(el));
+}else{
+  els.forEach(el=>el.classList.add('is-in'));
+}
+// smooth-scroll for in-page anchors
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',ev=>{
+    const id=a.getAttribute('href');
+    if(id.length<2)return;
+    const t=document.querySelector(id);
+    if(t){ev.preventDefault();t.scrollIntoView({behavior:prefersReduced?'auto':'smooth',block:'start'});history.replaceState(null,'',id);}
+  });
+});
+</script>
+</body>
+</html>

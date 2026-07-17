@@ -1,0 +1,40 @@
+# XcodeGen is the source of truth for the Xcode project.
+#
+# Xcode is not installed on this machine (Command Line Tools only), so `make` is the working build
+# path today. This file exists so `xcodegen generate` produces a real NotifyMe.xcodeproj that
+# opens and builds the moment Xcode is installed — without anyone hand-editing project.pbxproj,
+# which is unmergeable and would rot immediately with several agents adding files.
+#
+# Sources are globbed by directory, so new files added under Sources/NotifyMe/<Area>/ are picked
+# up with no edit here.
+
+name: NotifyMe
+
+options:
+  bundleIdPrefix: com.madebynikesh
+  deploymentTarget:
+    macOS: "13.0"          # SMAppService (launch-at-login) requires 13.0+
+  createIntermediateGroups: true
+
+targets:
+  NotifyMe:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/NotifyMe
+      # The icon is a *source* of this target, not a build artifact of it. Without this line the
+      # `make` build has an icon and the Xcode build silently does not — same commit, same Info.plist
+      # pointing at CFBundleIconFile=AppIcon, and nothing in Contents/Resources for it to point at.
+      # Only the .icns: `AppIcon.iconset/` beside it is iconutil's input and has no business shipping.
+      - path: Resources/AppIcon.icns
+    settings:
+      base:
+        INFOPLIST_FILE: Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.madebynikesh.NotifyMe
+        PRODUCT_NAME: NotifyMe
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        COMBINE_HIDPI_IMAGES: YES
